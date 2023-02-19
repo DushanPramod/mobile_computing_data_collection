@@ -35,17 +35,23 @@ class _MyFormsState extends State<MyForms> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-        padding: const EdgeInsets.all(8),
-        children: myForms.map((e) {
-          return Card(
-              child: ListTile(
-                  onTap: () {},
-                  title: Text(e.title),
-                  subtitle: Text(
-                      DateFormat('yyyy-MM-dd-kk:mm').format(e.createdDate)),
-                  leading: const Icon(Icons.my_library_books_rounded, size: 50),
-                  trailing: Text(e.numOfRecords)));
-        }).toList());
+    return Scaffold(
+      body: ListView(
+          padding: const EdgeInsets.all(8),
+          children: myForms.map((e) {
+            return Card(
+                child: ListTile(
+                    onTap: () {},
+                    title: Text(e.title),
+                    subtitle: Text(DateFormat('yyyy-MM-dd-kk:mm').format(e.createdDate)),
+                    leading: const Icon(Icons.my_library_books_rounded, size: 50),
+                    trailing: Text(e.numOfRecords)));
+          }).toList()),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        tooltip: 'Add new form',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
   }
 }
