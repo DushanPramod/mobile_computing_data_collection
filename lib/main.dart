@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_computing_data_collection/pages/login.dart';
+import 'package:firebase_core/firebase_core.dart';
+import './firebase/auth_server.dart';
 
-void main() {
-  runApp(const MaterialApp(
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
-      home:Login()
+      home:AuthService().handleAuthState(),
   ));
 }

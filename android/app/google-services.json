@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "552266223440",
+    "project_id": "mobile-computing-data-collect",
+    "storage_bucket": "mobile-computing-data-collect.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552266223440:android:d3b4d9c2348b3eb2316655",
+        "android_client_info": {
+          "package_name": "com.example.mobile_computing_data_collection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "552266223440-hb9bdad9poemj9in55or77licdeaf3ip.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0WaoFvIIS55IBjxFe1otfNnF8Fp5vKxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "552266223440-bkb4mm6ugda331u4o70qejtgf91ojeq3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

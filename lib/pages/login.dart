@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import '../firebase/auth_server.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -29,6 +29,7 @@ class _LoginState extends State<Login> {
         padding: const EdgeInsets.all(30),
         child: ElevatedButton.icon(
           onPressed: () {
+              AuthService().signInWithGoogle();
               print("You pressed Icon Elevated Button");
             },
           icon:Image.asset('assets/google image.png', height: 40, fit: BoxFit.cover,),

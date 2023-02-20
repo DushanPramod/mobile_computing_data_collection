@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.mobile_computing_data_collection">
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="mobile_computing_data_collection"
         android:name="${applicationName}"
