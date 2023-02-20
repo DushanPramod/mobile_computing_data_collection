@@ -95,17 +95,17 @@ class _CreateFormFieldState extends State<CreateFormField> {
   void submit () {
      String title = widget.title;
      String description = widget.description;
-     int numberOfInputFields = widget.numberOfInputFields;
+     // int numberOfInputFields = widget.numberOfInputFields;
      
-     print(title);
-     print(description);
-     print(numberOfInputFields);
+     // print(title);
+     // print(description);
+     // print(numberOfInputFields);
      
      for(int i = 0; i<inputFieldData.length;i++){
-       print(inputFieldData[i].number);
+       // print(inputFieldData[i].number);
        print(inputFieldData[i].fieldName);
        print(inputFieldData[i].dataType);
-       print('-----------------');
+       // print('-----------------');
      }
 
      Navigator.pop(context);
