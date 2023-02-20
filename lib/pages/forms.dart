@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_computing_data_collection/models/forms.mdl.dart';
 
+import 'fill-form.dart';
+
 class Forms extends StatefulWidget {
   const Forms({Key? key}) : super(key: key);
 
@@ -40,7 +42,8 @@ class _FormsState extends State<Forms> {
         children: formsList.map((e) {
           return Card(
               child: ListTile(
-                onTap: () {},
+                onTap: () => {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FillForm(formId: e.id)))},
                 title: Text(e.title),
                 subtitle: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
