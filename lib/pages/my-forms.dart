@@ -48,7 +48,9 @@ class _MyFormsState extends State<MyForms> {
                     trailing: Text(e.numOfRecords)));
           }).toList()),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, '/create-form');
+        },
         tooltip: 'Add new form',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

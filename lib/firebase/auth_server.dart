@@ -10,8 +10,10 @@ class AuthService{
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (BuildContext context, snapshot) {
         if(snapshot.hasData){
+          // Navigator.pushReplacementNamed(context, '/home');
           return const Home();
         }else{
+          // Navigator.pushReplacementNamed(context, '/');
           return const Login();
         }
       }
