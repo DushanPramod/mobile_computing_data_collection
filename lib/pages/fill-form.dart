@@ -1,11 +1,16 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:intl/intl.dart';
 import 'package:chewie/chewie.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:uuid/uuid.dart';
 
 class FillForm extends StatefulWidget {
   final String formId;
@@ -17,18 +22,43 @@ class FillForm extends StatefulWidget {
 }
 
 class _FillFormState extends State<FillForm> {
-  String title = 'test title 1';
-  String description =
-      'Explicitly passing type arguments is an effective way to help identify type errors. For example, if you change the code to specify List as a type argument, the analyzer can detect the type mismatch in the constructor argument. Fix the error by providing a constructor argument of the appropriate type, such as a list literal:';
+  //String title = 'test title 1';
+  // String description = 'Explicitly passing type arguments is an effective way to help identify type errors. For example, if you change the code to specify List as a type argument, the analyzer can detect the type mismatch in the constructor argument. Fix the error by providing a constructor argument of the appropriate type, such as a list literal:';
+
+  String title = '';
+  String description = '';
 
   List<InputTypeMdl> formInputFields = [
-    InputTypeMdl(0, 'Name', 'text', ''),
-    InputTypeMdl(1, 'Age', 'number', ''),
-    InputTypeMdl(2, 'Birthday', 'date', ''),
-    InputTypeMdl(3, 'Time', 'time', ''),
-    InputTypeMdl(4, 'Image', 'image', ''),
-    InputTypeMdl(5, 'Video', 'video', ''),
+    // InputTypeMdl(0, 'Name', 'text', ''),
+    // InputTypeMdl(1, 'Age', 'number', ''),
+    // InputTypeMdl(2, 'Birthday', 'date', ''),
+    // InputTypeMdl(3, 'Time', 'time', ''),
+    // InputTypeMdl(4, 'Image', 'image', ''),
+    // InputTypeMdl(5, 'Video', 'video', ''),
+    // InputTypeMdl(6, 'Audio', 'audio', ''),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    getFormData();
+  }
+
+  void getFormData() async {
+    CollectionReference form = FirebaseFirestore.instance.collection('forms_list');
+    final snapshot = await form.doc('BAkPwLJNBo8jexLKc1ir').get();
+    final data = snapshot.data() as Map<String, dynamic>;
+
+    setState(() {
+      formInputFields.clear();
+      title = data['title'];
+      description = data['description'];
+      for(int i = 0; i < data['inputFields'].length; i++){
+        formInputFields.add(InputTypeMdl(data['inputFields'][i]['inputNo'], data['inputFields'][i]['fieldName'], data['inputFields'][i]['dataType'], ''));
+      }
+    });
+
+  }
 
   Widget _buildTextInput(InputTypeMdl data) {
     return TextFormField(
@@ -223,16 +253,20 @@ class _FillFormState extends State<FillForm> {
   }
 
   Widget _buildImageInput(InputTypeMdl data) {
-    return Row(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Text(data.fieldName, style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w500)),
-        (data.data == null || data.data == '') ? const Text('No Image Selected')
-            : Image.file(File(data.data!.path), width: 200, height: 200),
-        // const Text('No image selected'),
-        ElevatedButton(onPressed: () {
-          _showChoiceDialog(context, data);
-        }, child: const Text('Select Image'))
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(data.fieldName, style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w500)),
+            ElevatedButton(onPressed: () {
+              _showChoiceDialog(context, data);
+            }, child: const Text('Select Image'))
+          ],
+        ),
+        (data.data == null || data.data == '') ? const Text('No Image Selected') : Image.file(File(data.data!.path), width: 200, height: 200),
+        const SizedBox(height: 5)
       ],
     );
   }
@@ -251,9 +285,11 @@ class _FillFormState extends State<FillForm> {
             }, child: const Text('Select Video'))
           ],
         ),
-        Container(
+
+
+        (data.data == null || data.data == '')?const Text('No Image Selected') : Container(
           color: Colors.brown,
-          height: MediaQuery.of(context).size.height * (30/100),
+          height: MediaQuery.of(context).size.height * (100/100),
           width: MediaQuery.of(context).size.width *  (100/100),
           child: (data.data == null || data.data == '')?const Center(
             child: Icon(Icons.videocam, color: Colors.red, size: 50.0),
@@ -262,7 +298,7 @@ class _FillFormState extends State<FillForm> {
             child: mounted?Chewie(
               controller: ChewieController(
                   videoPlayerController: VideoPlayerController.file(File(data.data!.path)),
-                  aspectRatio: 3/2,
+                  aspectRatio: 0.7,
                   autoPlay: false,
                   looping: false
               ),
@@ -300,6 +336,92 @@ class _FillFormState extends State<FillForm> {
     });
   }
 
+  Widget _buildAudioInput(InputTypeMdl data) {
+    return Column(
+      children: [
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(6.0),
+            side: const BorderSide(
+              color: Colors.red,
+              width: 4.0,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            primary: Colors.white,
+            elevation: 9.0,
+          ),
+          onPressed: () {},
+          icon: Icon(Icons.mic, color: Colors.red, size: 38.0),
+          label: Text(''),
+        ),
+
+        SizedBox(width: 30),
+
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(6.0),
+            side: const BorderSide(
+              color: Colors.red,
+              width: 4.0,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            primary: Colors.white,
+            elevation: 9.0,
+          ),
+          onPressed: () {},
+          icon: Icon(Icons.stop, color: Colors.red, size: 38.0),
+          label: Text(''),
+        )
+      ],
+    );
+  }
+
+  Future uploadFile(InputTypeMdl data) async {
+    if(data.data == null) return;
+    if(data.dataType != 'image' && data.dataType != 'video') return;
+
+    FirebaseStorage storage = FirebaseStorage.instance;
+    String fileRefStr = '${data.dataType}/${const Uuid().v4()}';
+    Reference ref = storage.ref().child(fileRefStr);
+    await ref.putFile(File(data.data!.path));
+
+    return fileRefStr;
+  }
+
+  void submit () async {
+    for(int i = 0; i < formInputFields.length; i++){
+      if(formInputFields[i].dataType == 'image' || formInputFields[i].dataType == 'video'){
+        String refString = await uploadFile(formInputFields[i]);
+        formInputFields[i].data = refString;
+      }
+    }
+
+    Map<String, String> data = {};
+    for(int i = 0; i < formInputFields.length; i++){
+      data.addAll({formInputFields[i].fieldName:formInputFields[i].data});
+    }
+    // print(data);
+
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance.collection('submitted_form_list')
+        .add({
+      'title': title,
+      'data': data,
+      'formId': widget.formId,
+      'userId': userId,
+      'createdDate': FieldValue.serverTimestamp(),
+      'updatedDate': FieldValue.serverTimestamp()
+    }).then((value) {
+      print('Data added successfully');
+      Navigator.pop(context);
+    }).catchError((error) => print('Failed to add data: $error'));
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -345,7 +467,7 @@ class _FillFormState extends State<FillForm> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // submit();
+                      submit();
                     }
                     _formKey.currentState!.save();
                   },
