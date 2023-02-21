@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'fill-form.dart';
+
 class MyCustomObject {
   final String title;
   late DateTime createdDate;
@@ -48,7 +50,9 @@ class _FormsState extends State<Forms> {
             itemBuilder: (context, index) {
               return Card(
                 child: ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => FillForm(formId:'index')));
+                  },
                   title: Text(myObjects[index].title),
                   subtitle: Text(DateFormat('yyyy-MM-dd-kk:mm').format(myObjects[index].createdDate)),
                   leading: const Icon(Icons.book, size: 50),
