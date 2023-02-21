@@ -1,61 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_computing_data_collection/models/forms.mdl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import 'fill-form.dart';
+class MyCustomObject {
+  final String title;
+  late DateTime createdDate;
+
+  MyCustomObject({required this.title, required this.createdDate});
+}
 
 class Forms extends StatefulWidget {
   const Forms({Key? key}) : super(key: key);
+
 
   @override
   State<Forms> createState() => _FormsState();
 }
 
 class _FormsState extends State<Forms> {
-  List<FormsModel> formsList = [
-    FormsModel(
-        id: '1',
-        title: 'test 1',
-        researcher: 'name 1',
-        createdDate: DateTime.parse('2023-02-18 13:00:04Z')),
-    FormsModel(
-        id: '1',
-        title: 'test 2',
-        researcher: 'name 1',
-        createdDate: DateTime.parse('2023-02-18 13:01:04Z')),
-    FormsModel(
-        id: '1',
-        title: 'test 3',
-        researcher: 'name 1',
-        createdDate: DateTime.parse('2023-02-18 13:02:04Z')),
-    FormsModel(
-        id: '1',
-        title: 'test 4',
-        researcher: 'name 1',
-        createdDate: DateTime.parse('2023-02-18 13:03:04Z'))
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return ListView(
-        padding: const EdgeInsets.all(8),
-        children: formsList.map((e) {
-          return Card(
-              child: ListTile(
-                onTap: () => {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => FillForm(formId: e.id)))},
-                title: Text(e.title),
-                subtitle: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(e.researcher),
-                    Text(DateFormat('yyyy-MM-dd-kk:mm').format(e.createdDate)),
-                  ],
+    CollectionReference collection = FirebaseFirestore.instance.collection('forms_list');
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: collection.where('userId', isNotEqualTo: userId).snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        List<MyCustomObject> myObjects = snapshot.data!.docs.map((DocumentSnapshot document) {
+          return MyCustomObject(
+              title: document.get('title'),
+              createdDate: document.get('createdDate')?.toDate()
+          );
+        }).toList();
+
+        return Scaffold(
+          body: ListView.builder(
+            itemCount: myObjects.length,
+            itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                  onTap: () {},
+                  title: Text(myObjects[index].title),
+                  subtitle: Text(DateFormat('yyyy-MM-dd-kk:mm').format(myObjects[index].createdDate)),
+                  leading: const Icon(Icons.book, size: 50),
                 ),
-                leading: const Icon(Icons.book, size: 50),
-                // trailing: Text(e.numOfRecords)
-              ));
-        }).toList());
+              );
+
+            },
+          ),
+        );
+      },
+    );
   }
 }
+
+
+
