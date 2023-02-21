@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import 'fill-form.dart';
+import 'package:mobile_computing_data_collection/pages/fill-form.dart';
 
 class MyCustomObject {
   final String title;
   late DateTime createdDate;
+  final String formId;
 
-  MyCustomObject({required this.title, required this.createdDate});
+  MyCustomObject({required this.title, required this.createdDate, required this.formId});
 }
 
 class Forms extends StatefulWidget {
@@ -40,7 +40,8 @@ class _FormsState extends State<Forms> {
         List<MyCustomObject> myObjects = snapshot.data!.docs.map((DocumentSnapshot document) {
           return MyCustomObject(
               title: document.get('title'),
-              createdDate: document.get('createdDate')?.toDate()
+              createdDate: document.get('createdDate')?.toDate(),
+              formId: document.id
           );
         }).toList();
 
@@ -51,7 +52,7 @@ class _FormsState extends State<Forms> {
               return Card(
                 child: ListTile(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => FillForm(formId:'index')));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => FillForm(formId: myObjects[index].formId)));
                   },
                   title: Text(myObjects[index].title),
                   subtitle: Text(DateFormat('yyyy-MM-dd-kk:mm').format(myObjects[index].createdDate)),
