@@ -9,7 +9,7 @@ import 'package:video_player/video_player.dart';
 import 'package:intl/intl.dart';
 import 'package:chewie/chewie.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:uuid/uuid.dart';
 
 class FillForm extends StatefulWidget {
@@ -27,6 +27,7 @@ class _FillFormState extends State<FillForm> {
 
   String title = '';
   String description = '';
+  bool isLoading = false;
 
   List<InputTypeMdl> formInputFields = [
     // InputTypeMdl(0, 'Name', 'text', ''),
@@ -45,6 +46,8 @@ class _FillFormState extends State<FillForm> {
   }
 
   void getFormData() async {
+    setState(() => isLoading = true);
+
     CollectionReference form = FirebaseFirestore.instance.collection('forms_list');
     final snapshot = await form.doc('BAkPwLJNBo8jexLKc1ir').get();
     final data = snapshot.data() as Map<String, dynamic>;
@@ -56,6 +59,7 @@ class _FillFormState extends State<FillForm> {
       for(int i = 0; i < data['inputFields'].length; i++){
         formInputFields.add(InputTypeMdl(data['inputFields'][i]['inputNo'], data['inputFields'][i]['fieldName'], data['inputFields'][i]['dataType'], ''));
       }
+      isLoading = false;
     });
 
   }
@@ -427,7 +431,10 @@ class _FillFormState extends State<FillForm> {
   Widget build(BuildContext context) {
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-    return Scaffold(
+    return isLoading == true ? const Scaffold(
+      backgroundColor: Colors.blue,
+        body:SpinKitCircle(color: Colors.white, size:140)):
+    Scaffold(
         appBar: AppBar(title: const Text('Form'), centerTitle: true),
         body: Container(
             margin: const EdgeInsets.all(24),
@@ -471,8 +478,7 @@ class _FillFormState extends State<FillForm> {
                     }
                     _formKey.currentState!.save();
                   },
-                  child: const Text('Submit',
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                  child: const Text('Submit', style: TextStyle(color: Colors.white, fontSize: 16)),
                 )
               ],
             ))));
