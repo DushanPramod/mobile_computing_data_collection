@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class MyCustomObject {
   final String title;
   final String filledCount;
-  final DateTime createdDate;
+  late DateTime createdDate;
 
   MyCustomObject({required this.title, required this.filledCount, required this.createdDate});
 }
