@@ -87,7 +87,7 @@ class _CreateFormState extends State<CreateForm> {
                   _buildDescription(),
                   _buildNumberOfInputFields(),
                   const SizedBox(height: 50),
-                  FilledButton(
+                  ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         Navigator.push(

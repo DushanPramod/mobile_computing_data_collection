@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_computing_data_collection/models/my-form.mdl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class MyCustomObject {
+  final String title;
+  final String filledCount;
+  final DateTime createdDate;
+
+  MyCustomObject({required this.title, required this.filledCount, required this.createdDate});
+}
 
 class MyForms extends StatefulWidget {
   const MyForms({Key? key}) : super(key: key);
@@ -10,50 +19,59 @@ class MyForms extends StatefulWidget {
 }
 
 class _MyFormsState extends State<MyForms> {
-  List<MyFormModel> myForms = [
-    MyFormModel(
-        id: '1',
-        title: 'test 1',
-        createdDate: DateTime.parse('2023-02-18 13:00:04Z'),
-        numOfRecords: 5.toString()),
-    MyFormModel(
-        id: '1',
-        title: 'test 2',
-        createdDate: DateTime.parse('2023-02-18 13:01:04Z'),
-        numOfRecords: 10.toString()),
-    MyFormModel(
-        id: '1',
-        title: 'test 3',
-        createdDate: DateTime.parse('2023-02-18 13:02:04Z'),
-        numOfRecords: 20.toString()),
-    MyFormModel(
-        id: '1',
-        title: 'test 4',
-        createdDate: DateTime.parse('2023-02-18 13:03:04Z'),
-        numOfRecords: 30.toString())
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListView(
-          padding: const EdgeInsets.all(8),
-          children: myForms.map((e) {
-            return Card(
+    CollectionReference collection = FirebaseFirestore.instance.collection('forms_list');
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: collection.where('userId', isEqualTo: userId).snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        List<MyCustomObject> myObjects = snapshot.data!.docs.map((DocumentSnapshot document) {
+          return MyCustomObject(
+              title: document.get('title'),
+              filledCount: document.get('title'),
+              createdDate: document.get('createdDate')?.toDate()
+          );
+        }).toList();
+
+        return Scaffold(
+          body: ListView.builder(
+            itemCount: myObjects.length,
+            itemBuilder: (context, index) {
+              return Card(
                 child: ListTile(
-                    onTap: () {},
-                    title: Text(e.title),
-                    subtitle: Text(DateFormat('yyyy-MM-dd-kk:mm').format(e.createdDate)),
-                    leading: const Icon(Icons.my_library_books_rounded, size: 50),
-                    trailing: Text(e.numOfRecords)));
-          }).toList()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/create-form');
-        },
-        tooltip: 'Add new form',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+                  onTap: () {},
+                  title: Text(myObjects[index].title),
+                  subtitle: Text(DateFormat('yyyy-MM-dd-kk:mm').format(myObjects[index].createdDate)),
+                  leading: const Icon(Icons.my_library_books_rounded, size: 50),
+                  trailing: Text(myObjects[index].filledCount),
+                ),
+              );
+
+            },
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/create-form');
+            },
+            tooltip: 'Add new form',
+            child: const Icon(Icons.add),
+          ),
+
+        );
+      },
     );
   }
 }
+
+
+

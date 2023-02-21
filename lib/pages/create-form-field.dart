@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 const List<String> inputTypes = <String>[
   'text',
@@ -92,7 +94,8 @@ class _CreateFormFieldState extends State<CreateFormField> {
   }
 
   
-  void submit () {
+  void submit (){
+    String userId = FirebaseAuth.instance.currentUser!.uid;
      String title = widget.title;
      String description = widget.description;
      // int numberOfInputFields = widget.numberOfInputFields;
@@ -107,6 +110,19 @@ class _CreateFormFieldState extends State<CreateFormField> {
        print(inputFieldData[i].dataType);
        // print('-----------------');
      }
+     FirebaseFirestore.instance
+         .collection('forms_list')
+         .add({
+       'title': title,
+       'description': description,
+       'inputFields': inputFieldData.map((e) => {'dataType': e.dataType, 'fieldName': e.fieldName, 'inputNo': e.number}),
+       'userId': userId,
+       'createdDate': FieldValue.serverTimestamp(),
+       'updatedDate': FieldValue.serverTimestamp()
+     })
+         .then((value) => print('Data added successfully'))
+         .catchError((error) => print('Failed to add data: $error'));
+
 
      Navigator.pop(context);
      Navigator.pop(context);
@@ -139,7 +155,7 @@ class _CreateFormFieldState extends State<CreateFormField> {
                     ),
                   ),
 
-                  FilledButton(
+                  ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         submit();
