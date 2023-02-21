@@ -178,39 +178,46 @@ class _FillFormState extends State<FillForm> {
         ));
   }
 
-  XFile? imageFile;
-  XFile? videoFile;
-  void _openGallery(BuildContext context, String dataType) async {
-    if(dataType == 'image'){
-      var picture = await ImagePicker().pickImage(source: ImageSource.gallery);
-      setState(() {
-        imageFile = picture;
-      });
+  // XFile? imageFile;
+  // XFile? videoFile;
+  void _openGallery(BuildContext context, InputTypeMdl data) async {
+    dynamic file;
+    if(data.dataType == 'image'){
+      file = await ImagePicker().pickImage(source: ImageSource.gallery);
     }
     else{
-      var video = await ImagePicker().pickVideo(source: ImageSource.gallery);
-      setState(() {
-        videoFile = video;
-      });
+      file = await ImagePicker().pickVideo(source: ImageSource.gallery);
     }
+
+    setState(() {
+      for (int i = 0; i < formInputFields.length; i++) {
+        if (formInputFields[i].inputNo == data.inputNo) {
+          formInputFields[i].data = file;
+        }
+      }
+    });
 
     if (context.mounted) Navigator.of(context).pop();
     // Navigator.of(context).pop();
   }
 
-  void _openCamera(BuildContext context, String dataType) async {
-    if(dataType == 'image'){
-      var picture = await ImagePicker().pickImage(source: ImageSource.camera);
-      setState(() {
-        imageFile = picture;
-      });
+  void _openCamera(BuildContext context, InputTypeMdl data) async {
+    dynamic file;
+    if(data.dataType == 'image'){
+      file = await ImagePicker().pickImage(source: ImageSource.camera);
     }
     else{
-      var video = await ImagePicker().pickVideo(source: ImageSource.camera);
-      setState(() {
-        videoFile = video;
-      });
+      file = await ImagePicker().pickVideo(source: ImageSource.camera);
     }
+
+    setState(() {
+      for (int i = 0; i < formInputFields.length; i++) {
+        if (formInputFields[i].inputNo == data.inputNo) {
+          formInputFields[i].data = file;
+        }
+      }
+    });
+
     if (context.mounted) Navigator.of(context).pop();
     // Navigator.of(context).pop();
   }
@@ -220,7 +227,8 @@ class _FillFormState extends State<FillForm> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         Text(data.fieldName, style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w500)),
-        imageFile == null?const Text('No Image Selected'): Image.file(File(imageFile!.path), width: 200, height: 200),
+        (data.data == null || data.data == '') ? const Text('No Image Selected')
+            : Image.file(File(data.data!.path), width: 200, height: 200),
         // const Text('No image selected'),
         ElevatedButton(onPressed: () {
           _showChoiceDialog(context, data);
@@ -247,13 +255,13 @@ class _FillFormState extends State<FillForm> {
           color: Colors.brown,
           height: MediaQuery.of(context).size.height * (30/100),
           width: MediaQuery.of(context).size.width *  (100/100),
-          child: videoFile == null?const Center(
+          child: (data.data == null || data.data == '')?const Center(
             child: Icon(Icons.videocam, color: Colors.red, size: 50.0),
           ):FittedBox(
             fit: BoxFit.contain,
             child: mounted?Chewie(
               controller: ChewieController(
-                  videoPlayerController: VideoPlayerController.file(File(videoFile!.path)),
+                  videoPlayerController: VideoPlayerController.file(File(data.data!.path)),
                   aspectRatio: 3/2,
                   autoPlay: false,
                   looping: false
@@ -275,14 +283,14 @@ class _FillFormState extends State<FillForm> {
               GestureDetector(
                 child: const Text('Gallery'),
                 onTap: (){
-                  _openGallery(context,data.dataType);
+                  _openGallery(context,data);
                 },
               ),
               const Padding(padding: EdgeInsets.all(8.0)),
               GestureDetector(
                 child: const Text('Camera'),
                 onTap: (){
-                  _openCamera(context,data.dataType);
+                  _openCamera(context,data);
                 },
               )
             ],
