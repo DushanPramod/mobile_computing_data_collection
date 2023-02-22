@@ -475,12 +475,9 @@ class _FillFormState extends State<FillForm> {
   Widget build(BuildContext context) {
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-    return isLoading == true ? const Scaffold(
-      backgroundColor: Colors.blue,
-        body:SpinKitCircle(color: Colors.white, size:140)):
-    Scaffold(
+    return Scaffold(
         appBar: AppBar(title: const Text('Form'), centerTitle: true),
-        body: Container(
+        body: isLoading == true ? const Center(child: CircularProgressIndicator()):Container(
             margin: const EdgeInsets.all(24),
             child: SingleChildScrollView(
                 child: Column(
