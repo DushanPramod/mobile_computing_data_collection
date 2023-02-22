@@ -33,6 +33,7 @@ class _FillFormState extends State<FillForm> {
   String title = '';
   String description = '';
   bool isLoading = false;
+  bool isSubmitting = false;
 
   List<InputTypeMdl> formInputFields = [
     // InputTypeMdl(0, 'Name', 'text', ''),
@@ -415,6 +416,8 @@ class _FillFormState extends State<FillForm> {
   }
 
   void submit () async {
+    isSubmitting = true;
+
     if((await InternetConnectionChecker().hasConnection) == true) {
       print('YAY! Free cute dog pics!');
 
@@ -440,9 +443,13 @@ class _FillFormState extends State<FillForm> {
         'createdDate': FieldValue.serverTimestamp(),
         'updatedDate': FieldValue.serverTimestamp()
       }).then((value) {
+        isSubmitting = false;
         print('Data added successfully');
         Navigator.pop(context);
-      }).catchError((error) => print('Failed to add data: $error'));
+      }).catchError((error) {
+        isSubmitting = false;
+        print('Failed to add data: $error');
+      });
     } else {
       print('No internet :( Reason:');
 
