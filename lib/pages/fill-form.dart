@@ -453,8 +453,8 @@ class _FillFormState extends State<FillForm> {
           formId: widget.formId,
           title: title,
           userId: FirebaseAuth.instance.currentUser!.uid,
-          createdDate: FieldValue.serverTimestamp().toString(),
-          updatedDate: FieldValue.serverTimestamp().toString()
+          createdDate: DateTime.now().millisecondsSinceEpoch,
+          updatedDate: DateTime.now().millisecondsSinceEpoch
       ));
 
       for(int i = 0; i< formInputFields.length; i++){
@@ -467,7 +467,7 @@ class _FillFormState extends State<FillForm> {
           await db.insertFormData(DbFormDataMdl(submitFormId:maxId+1 , fieldName: formInputFields[i].fieldName, data: formInputFields[i].data));
       }
 
-      if (context.mounted) Navigator.pop(context);
+      Navigator.pop(context);
     }
   }
 

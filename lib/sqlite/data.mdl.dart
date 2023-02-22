@@ -3,8 +3,8 @@ class DbFormMdl {
   final String formId;
   final String title;
   final String userId;
-  final String createdDate;
-  final String updatedDate;
+  final int createdDate;
+  final int updatedDate;
   DbFormMdl({required this.id, required this.formId, required this.title, required this.userId,
   required this.createdDate, required this.updatedDate});
 

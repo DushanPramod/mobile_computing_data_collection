@@ -13,8 +13,8 @@ class DB{
         formId TEXT NOT NULL,
         title TEXT NOT NULL,
         userId TEXT NOT NULL,
-        createdDate TEXT NOT NULL,
-        updatedDate TEXT NOT NULL
+        createdDate INTEGER NOT NULL,
+        updatedDate INTEGER NOT NULL
         )
         """);
 
@@ -58,8 +58,8 @@ class DB{
         formId: maps[i]['formId'],
         title: maps[i]['title'],
         userId: maps[i]['userId'],
-        createdDate: maps[i]['createdDate'],
-        updatedDate: maps[i]['updatedDate'],
+        createdDate: int.parse(maps[i]['createdDate']),
+        updatedDate: int.parse(maps[i]['updatedDate']),
       );
     });
   }
