@@ -3,6 +3,8 @@ import 'package:mobile_computing_data_collection/pages/my-forms.dart';
 import 'package:mobile_computing_data_collection/pages/submitted-forms.dart';
 import 'package:mobile_computing_data_collection/pages/forms.dart';
 
+import '../firebase/auth_server.dart';
+
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -32,8 +34,9 @@ class _HomeState extends State<Home> {
             Stack(
               children: <Widget>[
                 IconButton(
-                    icon: const Icon(Icons.notifications),
+                    icon: const Icon(Icons.logout),
                     onPressed: () {
+                      AuthService().signOut();
                       setState(() {
                         counter = 0;
                       });
