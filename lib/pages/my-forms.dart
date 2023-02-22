@@ -5,10 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class MyCustomObject {
   final String title;
-  final String filledCount;
-  final DateTime createdDate;
+  late DateTime createdDate;
 
-  MyCustomObject({required this.title, required this.filledCount, required this.createdDate});
+  MyCustomObject({required this.title, required this.createdDate});
 }
 
 class MyForms extends StatefulWidget {
@@ -25,11 +24,6 @@ class _MyFormsState extends State<MyForms> {
     CollectionReference collection = FirebaseFirestore.instance.collection('forms_list');
     String userId = FirebaseAuth.instance.currentUser!.uid;
 
-    Future<int> getDocumentCount(String documentId) async {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('submitted_form_list').where('formId', isEqualTo: documentId).get();
-      return snapshot.size;
-    }
-
     return StreamBuilder<QuerySnapshot>(
       stream: collection.where('userId', isEqualTo: userId).snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -42,11 +36,9 @@ class _MyFormsState extends State<MyForms> {
         }
 
         List<MyCustomObject> myObjects = snapshot.data!.docs.map((DocumentSnapshot document){
-          // int docCount = await getDocumentCount(document.id);
           return MyCustomObject(
               title: document.get('title'),
-              filledCount: document.get('title'),
-              createdDate: document.get('createdDate')?.toDate()
+              createdDate: document.get('createdDate') == null ? DateTime.now() : document.get('createdDate')?.toDate()
           );
         }).toList();
 
@@ -56,11 +48,13 @@ class _MyFormsState extends State<MyForms> {
             itemBuilder: (context, index) {
               return Card(
                 child: ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    // Navigator.push(context, MaterialPageRoute(builder: (context) => MyForms(formId: myObjects[index].formId)));
+                  },
                   title: Text(myObjects[index].title),
                   subtitle: Text(DateFormat('yyyy-MM-dd-kk:mm').format(myObjects[index].createdDate)),
                   leading: const Icon(Icons.my_library_books_rounded, size: 50),
-                  trailing: Text(myObjects[index].filledCount),
+                  // trailing: Text(myObjects[index].filledCount.toString()),
                 ),
               );
 
