@@ -1,16 +1,22 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:mobile_computing_data_collection/sqlite/data.mdl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:intl/intl.dart';
 import 'package:chewie/chewie.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:uuid/uuid.dart';
+
+import '../sqlite/database.dart';
 
 class FillForm extends StatefulWidget {
   final String formId;
@@ -22,8 +28,7 @@ class FillForm extends StatefulWidget {
 }
 
 class _FillFormState extends State<FillForm> {
-  //String title = 'test title 1';
-  // String description = 'Explicitly passing type arguments is an effective way to help identify type errors. For example, if you change the code to specify List as a type argument, the analyzer can detect the type mismatch in the constructor argument. Fix the error by providing a constructor argument of the appropriate type, such as a list literal:';
+  late DB db;
 
   String title = '';
   String description = '';
@@ -43,13 +48,15 @@ class _FillFormState extends State<FillForm> {
   void initState() {
     super.initState();
     getFormData();
+
+    db = DB();
   }
 
   void getFormData() async {
     setState(() => isLoading = true);
 
     CollectionReference form = FirebaseFirestore.instance.collection('forms_list');
-    final snapshot = await form.doc('BAkPwLJNBo8jexLKc1ir').get();
+    final snapshot = await form.doc(widget.formId).get();
     final data = snapshot.data() as Map<String, dynamic>;
 
     setState(() {
@@ -66,6 +73,7 @@ class _FillFormState extends State<FillForm> {
 
   Widget _buildTextInput(InputTypeMdl data) {
     return TextFormField(
+      initialValue: data.data,
       decoration: InputDecoration(labelText: data.fieldName),
       // maxLength: 150,
       validator: (value) {
@@ -92,6 +100,7 @@ class _FillFormState extends State<FillForm> {
 
   Widget _buildNumberInput(InputTypeMdl data) {
     return TextFormField(
+      initialValue: data.data,
       decoration: InputDecoration(labelText: data.fieldName),
       keyboardType: TextInputType.number,
       inputFormatters: <TextInputFormatter>[
@@ -396,35 +405,70 @@ class _FillFormState extends State<FillForm> {
     return fileRefStr;
   }
 
+  Future uploadFile2(File data) async {
+
+    FirebaseStorage storage = FirebaseStorage.instance;
+    String fileRefStr = const Uuid().v4();
+    Reference ref = storage.ref().child(fileRefStr);
+    await ref.putFile(data);
+    return fileRefStr;
+  }
+
   void submit () async {
-    for(int i = 0; i < formInputFields.length; i++){
-      if(formInputFields[i].dataType == 'image' || formInputFields[i].dataType == 'video'){
-        String refString = await uploadFile(formInputFields[i]);
-        formInputFields[i].data = refString;
+    if((await InternetConnectionChecker().hasConnection) == true) {
+      print('YAY! Free cute dog pics!');
+
+      for(int i = 0; i < formInputFields.length; i++){
+        if(formInputFields[i].dataType == 'image' || formInputFields[i].dataType == 'video'){
+          String refString = await uploadFile(formInputFields[i]);
+          formInputFields[i].data = refString;
+        }
       }
+
+      Map<String, String> data = {};
+      for(int i = 0; i < formInputFields.length; i++){
+        data.addAll({formInputFields[i].fieldName:formInputFields[i].data});
+      }
+
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      FirebaseFirestore.instance.collection('submitted_form_list')
+          .add({
+        'title': title,
+        'data': data,
+        'formId': widget.formId,
+        'userId': userId,
+        'createdDate': FieldValue.serverTimestamp(),
+        'updatedDate': FieldValue.serverTimestamp()
+      }).then((value) {
+        print('Data added successfully');
+        Navigator.pop(context);
+      }).catchError((error) => print('Failed to add data: $error'));
+    } else {
+      print('No internet :( Reason:');
+
+      List<DbFormMdl> localFormList = await db.getForms();
+      int maxId = localFormList.isEmpty? 0 : localFormList.map((e) => e.id).toList().reduce(max);
+      await db.insertForm(DbFormMdl(
+          id:maxId+1 ,
+          formId: widget.formId,
+          title: title,
+          userId: FirebaseAuth.instance.currentUser!.uid,
+          createdDate: FieldValue.serverTimestamp().toString(),
+          updatedDate: FieldValue.serverTimestamp().toString()
+      ));
+
+      for(int i = 0; i< formInputFields.length; i++){
+          if(formInputFields[i].dataType == 'image' || formInputFields[i].dataType == 'video'){
+            final String duplicateFilePath =  (await getApplicationDocumentsDirectory()).path;
+            String fileNameRef = '$duplicateFilePath/${const Uuid().v4()}';
+            await File(formInputFields[0].data!.path).copy(fileNameRef);
+            formInputFields[i].data = fileNameRef;
+          }
+          await db.insertFormData(DbFormDataMdl(submitFormId:maxId+1 , fieldName: formInputFields[i].fieldName, data: formInputFields[i].data));
+      }
+
+      if (context.mounted) Navigator.pop(context);
     }
-
-    Map<String, String> data = {};
-    for(int i = 0; i < formInputFields.length; i++){
-      data.addAll({formInputFields[i].fieldName:formInputFields[i].data});
-    }
-    // print(data);
-
-    String userId = FirebaseAuth.instance.currentUser!.uid;
-    FirebaseFirestore.instance.collection('submitted_form_list')
-        .add({
-      'title': title,
-      'data': data,
-      'formId': widget.formId,
-      'userId': userId,
-      'createdDate': FieldValue.serverTimestamp(),
-      'updatedDate': FieldValue.serverTimestamp()
-    }).then((value) {
-      print('Data added successfully');
-      Navigator.pop(context);
-    }).catchError((error) => print('Failed to add data: $error'));
-
-
   }
 
   @override
